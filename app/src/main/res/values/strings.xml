@@ -7,4 +7,5 @@
   <string name="your_location">Your location</string>
   <string name="location">Location</string>
   <string name="to">To</string>
+  <string name="can_not_connect_to_google_play_services">Can\'t connect to Google Play services</string>
 </resources>
