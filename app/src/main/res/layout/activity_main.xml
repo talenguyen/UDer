@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/rootView"
     android:layout_width="match_parent"
@@ -7,13 +7,16 @@
     android:orientation="vertical"
     >
 
-  <include layout="@layout/toolbar"/>
+  <include
+      android:id="@+id/topPanel"
+      layout="@layout/view_select_location"/>
 
   <FrameLayout
       android:id="@+id/main_frame_layout"
       android:layout_width="match_parent"
       android:layout_height="0dp"
-      android:layout_weight="1"
+      android:layout_below="@+id/topPanel"
+      android:layout_alignParentBottom="true"
       />
 
-</LinearLayout>
+</RelativeLayout>

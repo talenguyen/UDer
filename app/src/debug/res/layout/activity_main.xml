@@ -4,24 +4,27 @@
     android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.tale.uder.ui.activities.MainActivity"
+    tools:context=".ui.main.MainActivity"
     >
 
-  <LinearLayout
+  <RelativeLayout
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:orientation="vertical"
       >
 
-    <include layout="@layout/toolbar"/>
+    <include
+        android:id="@+id/topPanel"
+        layout="@layout/view_select_location"
+        />
 
     <FrameLayout
         android:id="@+id/main_frame_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_below="@+id/topPanel"
+        android:layout_alignParentBottom="true"
         />
 
-  </LinearLayout>
-
+  </RelativeLayout>
 </android.support.v4.widget.DrawerLayout>
