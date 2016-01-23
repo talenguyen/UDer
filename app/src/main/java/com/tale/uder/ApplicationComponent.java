@@ -10,7 +10,7 @@ import com.tale.uder.developer_settings.DeveloperSettingsModule;
 import com.tale.uder.developer_settings.LeakCanaryProxy;
 import com.tale.uder.models.ModelsModule;
 import com.tale.uder.network.NetworkModule;
-import com.tale.uder.ui.activities.MainActivity;
+import com.tale.uder.ui.main.MainActivity;
 import com.tale.uder.ui.fragments.ItemsFragment;
 import dagger.Component;
 import javax.inject.Singleton;

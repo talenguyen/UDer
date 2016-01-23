@@ -10,7 +10,7 @@ import com.tale.uder.TestUtils;
 import com.tale.uder.rules.MockWebServerRule;
 import com.tale.uder.rules.NeedsMockWebServer;
 import com.tale.uder.screens.ItemsScreen;
-import com.tale.uder.ui.activities.MainActivity;
+import com.tale.uder.ui.main.MainActivity;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
