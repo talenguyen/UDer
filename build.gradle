@@ -73,6 +73,7 @@ ext.versions = [
         equalsVerifier    : '1.7.5',
         mockito           : '1.10.19',
         supportTestRunner : '0.4.1',
+        playServices      : '8.4.0',
 ]
 
 ext.libraries = [
@@ -121,6 +122,7 @@ ext.libraries = [
         supportTestRules        : "com.android.support.test:rules:$versions.supportTestRunner",
         espressoCore            : "com.android.support.test.espresso:espresso-core:$versions.espresso",
         espressoContrib         : "com.android.support.test.espresso:espresso-contrib:$versions.espresso",
+        playServices            : "com.google.android.gms:play-services:$versions.playServices",
 ]
 
 subprojects {

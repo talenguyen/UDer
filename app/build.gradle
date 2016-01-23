@@ -136,6 +136,7 @@ dependencies {
 
   compile libraries.butterKnife
   compile libraries.timber
+  compile libraries.playServices
 
   // Developer tools (Developer Settings)
   debugCompile libraries.stetho
