@@ -43,8 +43,7 @@ public class UderApp extends Application {
   @NonNull protected DaggerApplicationComponent.Builder prepareApplicationComponent() {
     return DaggerApplicationComponent.builder().applicationModule(new ApplicationModule(this))
         // This url may be changed dynamically for tests! See ChangeableBaseUrl.
-        .apiModule(new ApiModule(
-            "https://raw.githubusercontent.com/artem-zinnatullin/qualitymatters/master/rest_api/"));
+        .apiModule(new ApiModule("https://maps.googleapis.com"));
   }
 
   @NonNull public ApplicationComponent applicationComponent() {

@@ -27,9 +27,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.tale.uder.R;
 import com.tale.uder.UderApp;
 import com.tale.uder.ui.other.ViewModifier;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -169,11 +171,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     updateBounds();
   }
 
+  @Override public void showDirection(List<LatLng> points) {
+    if (googleMap == null) {
+      return;
+    }
+    googleMap.addPolyline(new PolylineOptions().addAll(points).geodesic(true));
+  }
+
+  @Override public void showLoadDirectionError() {
+    Snackbar.make(rootView, R.string.error_load_direction, Snackbar.LENGTH_SHORT).show();
+  }
+
   private Marker addMarker(@NonNull LatLng latLng, @NonNull String title) {
+    if (googleMap == null) {
+      return null;
+    }
     return googleMap.addMarker(new MarkerOptions().position(latLng).title(title).draggable(true));
   }
 
   private void updateBounds() {
+    if (googleMap == null) {
+      return;
+    }
     final LatLngBounds.Builder builder = new LatLngBounds.Builder();
     if (markerFrom != null) {
       builder.include(markerFrom.getPosition());

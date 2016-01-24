@@ -6,4 +6,5 @@
   <string name="location">Location</string>
   <string name="to">To</string>
   <string name="can_not_connect_to_google_play_services">Can\'t connect to Google Play services</string>
+  <string name="error_load_direction">Error!!! Can\'t load direction</string>
 </resources>

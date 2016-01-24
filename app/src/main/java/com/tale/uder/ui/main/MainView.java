@@ -8,6 +8,7 @@
 package com.tale.uder.ui.main;
 
 import com.google.android.gms.maps.model.LatLng;
+import java.util.List;
 
 public interface MainView {
   void showFromAddress(CharSequence address);
@@ -17,4 +18,8 @@ public interface MainView {
   void showToAddress(CharSequence address);
 
   void showToLocation(LatLng latLng);
+
+  void showDirection(List<LatLng> points);
+
+  void showLoadDirectionError();
 }
