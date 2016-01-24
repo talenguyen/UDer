@@ -23,7 +23,7 @@ import javax.inject.Singleton;
   @NonNull ObjectMapper objectMapper();
 
   // Provide UderRestApi from the real app to the tests without need in injection to the test.
-  @NonNull UderRestApi qualityMattersApi();
+  @NonNull UderRestApi udersApi();
 
   @NonNull ChangeableBaseUrl changeableBaseUrl();
 

@@ -36,7 +36,7 @@ public class UderRobolectricUnitTestRunner extends RobolectricGradleTestRunner {
   }
 
   @NonNull
-  public static UderApp qualityMattersApp() {
+  public static UderApp udersApp() {
     return (UderApp) RuntimeEnvironment.application;
   }
 }
