@@ -35,6 +35,16 @@ public class MainPresenter extends Presenter<MainView> {
     }
   }
 
+  public void setTo(Place place) {
+    final MainView view = view();
+    if (view != null) {
+      final CharSequence address = place.getAddress();
+      view.showToAddress(address);
+      view.showToLocation(place.getLatLng());
+      analyticsModel.sendEvent(AnalyticsModel.EvenBuilder.pickTo(address));
+    }
+  }
+
   public void onSearchPlaceError(Status status) {
     analyticsModel.sendError(status.getStatusMessage(),
         new RuntimeException(status.getStatusMessage()));

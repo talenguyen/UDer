@@ -10,6 +10,7 @@ package com.tale.uder.ui.main;
 import android.support.annotation.NonNull;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.maps.model.LatLng;
+import com.tale.uder.models.AnalyticsModel;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,8 +29,8 @@ public class MainPresenterTest {
   @NonNull private MainView mainView;
   
   @Before public void beforeEachTest() {
-    mainPresenter =
-        new MainPresenter();
+    final AnalyticsModel analyticsModel = mock(AnalyticsModel.class);
+    mainPresenter = new MainPresenter(analyticsModel);
     mainView = mock(MainView.class);
   }
 
@@ -41,7 +42,7 @@ public class MainPresenterTest {
     when(place.getAddress()).thenReturn(address);
     final LatLng latLng = new LatLng(1, 1);
     when(place.getLatLng()).thenReturn(latLng);
-    mainPresenter.onFromPicked(place);
+    mainPresenter.setFrom(place);
 
     verify(mainView).showFromAddress(eq(address));
     verify(mainView).showFromLocation(eq(latLng));
@@ -55,7 +56,7 @@ public class MainPresenterTest {
     when(place.getAddress()).thenReturn(address);
     final LatLng latLng = new LatLng(1, 1);
     when(place.getLatLng()).thenReturn(latLng);
-    mainPresenter.onToPicked(place);
+    mainPresenter.setTo(place);
 
     verify(mainView).showToAddress(eq(address));
     verify(mainView).showToLocation(eq(latLng));
@@ -72,10 +73,10 @@ public class MainPresenterTest {
     // Unbind before onPick
     mainPresenter.unbindView(mainView);
 
-    mainPresenter.onFromPicked(place);
+    mainPresenter.setFrom(place);
     verifyZeroInteractions(mainView);
 
-    mainPresenter.onToPicked(place);
+    mainPresenter.setTo(place);
     verifyZeroInteractions(mainView);
 
   }

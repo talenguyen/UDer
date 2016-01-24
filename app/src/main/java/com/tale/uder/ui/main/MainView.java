@@ -13,4 +13,8 @@ public interface MainView {
   void showFromAddress(CharSequence address);
 
   void showFromLocation(LatLng latLng);
+
+  void showToAddress(CharSequence address);
+
+  void showToLocation(LatLng latLng);
 }

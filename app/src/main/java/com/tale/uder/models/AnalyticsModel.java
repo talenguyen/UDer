@@ -17,6 +17,10 @@ public interface AnalyticsModel {
     public static String pickFrom(CharSequence address) {
       return String.format("from:%s", address);
     }
+
+    public static String pickTo(CharSequence address) {
+      return String.format("to:%s", address);
+    }
   }
 
   void init();

@@ -17,6 +17,7 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -34,22 +35,24 @@ import javax.inject.Named;
 
 import static com.tale.uder.developer_settings.DeveloperSettingsModule.MAIN_ACTIVITY_VIEW_MODIFIER;
 
-public class MainActivity extends AppCompatActivity
-    implements OnMapReadyCallback, MainView {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, MainView {
 
   private static final int SEARCH_FROM_REQUEST_CODE = 1;
+  private static final int SEARCH_TO_REQUEST_CODE = 2;
 
   @Inject @Named(MAIN_ACTIVITY_VIEW_MODIFIER) ViewModifier viewModifier;
   @Inject MainPresenter presenter;
 
-  @NonNull
-  @Bind(R.id.rootView) View rootView;
+  @NonNull @Bind(R.id.rootView) View rootView;
 
-  @NonNull
-  @Bind(R.id.tvFrom) TextView tvFrom;
+  @NonNull @Bind(R.id.tvFrom) TextView tvFrom;
+
+  @NonNull @Bind(R.id.tvTo) TextView tvTo;
 
   private GoogleMap googleMap;
   private Marker markerFrom;
+  private Marker markerTo;
+  private int mapPadding;
 
   @SuppressLint("InflateParams") // It's okay in our case.
   @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,6 +69,8 @@ public class MainActivity extends AppCompatActivity
 
     presenter.bindView(this);
 
+    mapPadding = getResources().getDisplayMetrics().widthPixels / 3;
+
   }
 
   @Override protected void onDestroy() {
@@ -75,6 +80,10 @@ public class MainActivity extends AppCompatActivity
 
   @OnClick(R.id.btPickFrom) public void sendSearchPlaceRequestForFrom(View view) {
     sendSearchPlaceRequest(SEARCH_FROM_REQUEST_CODE);
+  }
+
+  @OnClick(R.id.btPickTo) public void sendSearchPlaceRequestForTo(View view) {
+    sendSearchPlaceRequest(SEARCH_TO_REQUEST_CODE);
   }
 
   @Override public void onMapReady(GoogleMap googleMap) {
@@ -89,10 +98,14 @@ public class MainActivity extends AppCompatActivity
   }
 
   @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == SEARCH_FROM_REQUEST_CODE) {
+    if (requestCode == SEARCH_FROM_REQUEST_CODE || requestCode == SEARCH_TO_REQUEST_CODE) {
       if (resultCode == RESULT_OK) {
         final Place place = PlaceAutocomplete.getPlace(this, data);
-        presenter.setFrom(place);
+        if (requestCode == SEARCH_FROM_REQUEST_CODE) {
+          presenter.setFrom(place);
+        } else {
+          presenter.setTo(place);
+        }
       } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
         Status status = PlaceAutocomplete.getStatus(this, data);
         presenter.onSearchPlaceError(status);
@@ -103,7 +116,7 @@ public class MainActivity extends AppCompatActivity
   private void sendSearchPlaceRequest(int requestCode) {
     try {
       Intent intent =
-          new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY).build(this);
+          new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
       startActivityForResult(intent, requestCode);
     } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
       showError(e);
@@ -123,18 +136,54 @@ public class MainActivity extends AppCompatActivity
     tvFrom.setText(address);
   }
 
+  @Override public void showToAddress(CharSequence address) {
+    if (tvTo == null) {
+      return;
+    }
+    tvTo.setText(address);
+  }
+
   @Override public void showFromLocation(@NonNull LatLng latLng) {
     if (googleMap == null) {
       return;
     }
     if (markerFrom == null) {
-      // If there is no marker with that name displaying on screen
-      markerFrom = googleMap.addMarker(
-          new MarkerOptions().position(latLng).title(getString(R.string.from)).draggable(true));
+      markerFrom = addMarker(latLng, getString(R.string.from));
+    } else {
+      // If marker already exist then we just change its position.
+      markerFrom.setPosition(latLng);
     }
-    final LatLngBounds.Builder builder = new LatLngBounds.Builder();
-    builder.include(latLng);
-    googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
+    updateBounds();
   }
 
+  @Override public void showToLocation(@NonNull LatLng latLng) {
+    if (googleMap == null) {
+      return;
+    }
+    if (markerTo == null) {
+      markerTo = addMarker(latLng, getString(R.string.to));
+    } else {
+      // If marker already exist then we just change its position.
+      markerTo.setPosition(latLng);
+    }
+    updateBounds();
+  }
+
+  private Marker addMarker(@NonNull LatLng latLng, @NonNull String title) {
+    return googleMap.addMarker(new MarkerOptions().position(latLng).title(title).draggable(true));
+  }
+
+  private void updateBounds() {
+    final LatLngBounds.Builder builder = new LatLngBounds.Builder();
+    if (markerFrom != null) {
+      builder.include(markerFrom.getPosition());
+    }
+    if (markerTo != null) {
+      builder.include(markerTo.getPosition());
+    }
+
+    final LatLngBounds bounds = builder.build();
+    final CameraUpdate update = CameraUpdateFactory.newLatLngBounds(bounds, mapPadding);
+    googleMap.animateCamera(update);
+  }
 }
