@@ -16,8 +16,8 @@ import timber.log.Timber;
   }
 
   @Provides @NonNull
-  public ItemsModel provideItemsModel(@NonNull UderRestApi uderRestApi) {
-    return new ItemsModel(uderRestApi);
+  public DirectionModel provideItemsModel(@NonNull UderRestApi uderRestApi) {
+    return new DirectionModel(uderRestApi);
   }
 
   static class NoOpAnalyticsModel implements AnalyticsModel {
