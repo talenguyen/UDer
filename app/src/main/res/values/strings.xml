@@ -1,7 +1,5 @@
 <resources>
   <string name="app_name">UDer</string>
-  <string name="items_loading_error_text">Couldn\'t load items :(</string>
-  <string name="common_try_again_button">Try again</string>
   <string name="list_item_image_content_description">Item image</string>
   <string name="from">from</string>
   <string name="your_location">Your location</string>

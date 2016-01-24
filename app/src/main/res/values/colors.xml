@@ -4,7 +4,6 @@
   <color name="colorPrimaryDark">#00796B</color>
   <color name="colorAccent">#03A9F4</color>
 
-  <color name="items_list_background">#dddddd</color>
   <color name="list_item_card_background">#eeeeee</color>
   <color name="list_item_title_background">#44000000</color>
   <color name="list_item_title_text_color">#ffffff</color>

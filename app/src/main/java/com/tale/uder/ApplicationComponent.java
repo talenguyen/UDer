@@ -11,7 +11,6 @@ import com.tale.uder.developer_settings.LeakCanaryProxy;
 import com.tale.uder.models.ModelsModule;
 import com.tale.uder.network.NetworkModule;
 import com.tale.uder.ui.main.MainActivity;
-import com.tale.uder.ui.fragments.ItemsFragment;
 import dagger.Component;
 import javax.inject.Singleton;
 
@@ -31,12 +30,9 @@ import javax.inject.Singleton;
   // Provide LeakCanary without injection to leave
   @NonNull LeakCanaryProxy leakCanaryProxy();
 
-  @NonNull ItemsFragment.ItemsFragmentComponent plus(
-      @NonNull ItemsFragment.ItemsFragmentModule itemsFragmentModule);
-
   @NonNull DeveloperSettingsComponent plusDeveloperSettingsComponent();
 
   void inject(@NonNull UderApp uderApp);
 
-  void inject(@NonNull MainActivity mainActivity);
+  void inject(@NonNull MainActivity activity);
 }
