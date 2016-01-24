@@ -7,6 +7,18 @@ import android.support.annotation.NonNull;
  */
 public interface AnalyticsModel {
 
+  class EvenBuilder {
+    /**
+     * Private constructor for Utility class
+     */
+    private EvenBuilder() {
+    }
+
+    public static String pickFrom(CharSequence address) {
+      return String.format("from:%s", address);
+    }
+  }
+
   void init();
 
   void sendEvent(@NonNull String eventName);
