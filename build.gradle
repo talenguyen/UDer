@@ -102,8 +102,8 @@ ext.libraries = [
         butterKnife             : "com.jakewharton:butterknife:$versions.butterKnife",
         timber                  : "com.jakewharton.timber:timber:$versions.timber",
 
-        // Analytics https://tech.yandex.com/metrica-mobile-sdk/
-        yandexAppMetrica        : "com.yandex.android:mobmetricalib:$versions.yandexAppMetrica",
+        playServicesMaps        : "com.google.android.gms:play-services-maps:$versions.playServices",
+        playServicesLocation    : "com.google.android.gms:play-services-location:$versions.playServices",
 
         // Developer Tools
         stetho                  : "com.facebook.stetho:stetho:$versions.stetho",
@@ -122,8 +122,7 @@ ext.libraries = [
         supportTestRules        : "com.android.support.test:rules:$versions.supportTestRunner",
         espressoCore            : "com.android.support.test.espresso:espresso-core:$versions.espresso",
         espressoContrib         : "com.android.support.test.espresso:espresso-contrib:$versions.espresso",
-        playServicesMaps        : "com.google.android.gms:play-services-maps:$versions.playServices",
-        playServicesLocation    : "com.google.android.gms:play-services-location:$versions.playServices",
+        espressoIntents         : "com.android.support.test.espresso:espresso-intents:$versions.espresso",
 ]
 
 subprojects {
