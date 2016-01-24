@@ -55,6 +55,7 @@ ext.versions = [
         javaxInject       : '1',
         javaxAnnotationApi: '1.2',
         rxJava            : '1.1.0',
+        rxAndroid         : '1.1.0',
         supportLibs       : '23.1.1',
         okHttp            : '2.7.0',
         retrofit          : '2.0.0-beta2',
@@ -83,6 +84,7 @@ ext.libraries = [
         javaxAnnotationApi      : "javax.annotation:javax.annotation-api:$versions.javaxAnnotationApi",
 
         rxJava                  : "io.reactivex:rxjava:$versions.rxJava",
+        rxAndroid               : "io.reactivex:rxandroid:$versions.rxAndroid",
 
         okHttp                  : "com.squareup.okhttp:okhttp:$versions.okHttp",
         okHttpLoggingInterceptor: "com.squareup.okhttp:logging-interceptor:$versions.okHttp",
