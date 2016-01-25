@@ -44,7 +44,7 @@ public class DirectionModelTest {
 
   @Test public void getDirection_shouldReturnErrorFromUderRestApi() throws Exception {
     Exception error = new RuntimeException();
-    when(uderRestApi.getDirection(anyString(), anyString(), eq(DirectionModel.API_KEY))).thenReturn(
+    when(uderRestApi.getDirection(anyString(), anyString(), eq(Constants.API_KEY))).thenReturn(
         Single.error(error));
 
     try {

@@ -22,11 +22,6 @@ import rx.Single;
  */
 public class DirectionModel {
 
-  /**
-   * Secret key should be store on server
-   */
-  public static final String API_KEY = "AIzaSyBrHQhPLbtwA30x9m15dbaGM2pAJwGW_dI";
-
   @NonNull private final UderRestApi uderRestApi;
 
   public DirectionModel(@NonNull UderRestApi uderRestApi) {
@@ -38,7 +33,7 @@ public class DirectionModel {
     final String origin = String.format("place_id:%s", originPlaceId);
     final String destination = String.format("place_id:%s", destinationPlaceId);
     final Single<DirectionResponse> directionResponseSingle =
-        uderRestApi.getDirection(origin, destination, API_KEY);
+        uderRestApi.getDirection(origin, destination, Constants.API_KEY);
     return directionResponseSingle.flatMap(
         directionResponse -> calculatePoints(directionResponse.routes));
   }

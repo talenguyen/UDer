@@ -5,8 +5,10 @@ import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.tale.uder.UderIntegrationRobolectricTestRunner;
 import com.tale.uder.api.UderRestApi;
+import com.tale.uder.api.entities.Address;
 import com.tale.uder.api.entities.DirectionResponse;
-import com.tale.uder.models.DirectionModel;
+import com.tale.uder.api.entities.PlaceResponse;
+import com.tale.uder.models.Constants;
 import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
@@ -28,7 +30,7 @@ import static org.assertj.core.api.Assertions.fail;
  * </ul>
  */
 @RunWith(UderIntegrationRobolectricTestRunner.class) public class UderRestApiIntegrationTest {
-  private static final String SAMPLE_RESPONSE = "{\n"
+  private static final String SAMPLE_DIRECTION_RESPONSE = "{\n"
       + "   \"geocoded_waypoints\" : [\n"
       + "      {\n"
       + "         \"geocoder_status\" : \"OK\",\n"
@@ -405,6 +407,76 @@ import static org.assertj.core.api.Assertions.fail;
       + "   ],\n"
       + "   \"status\" : \"OK\"\n"
       + "}";
+    private static final String SAMPLE_PLACE_RESPONSE = "{\n"
+        + "   \"results\" : [\n"
+        + "      {\n"
+        + "         \"address_components\" : [\n"
+        + "            {\n"
+        + "               \"long_name\" : \"277\",\n"
+        + "               \"short_name\" : \"277\",\n"
+        + "               \"types\" : [ \"street_number\" ]\n"
+        + "            },\n"
+        + "            {\n"
+        + "               \"long_name\" : \"Bedford Ave\",\n"
+        + "               \"short_name\" : \"Bedford Ave\",\n"
+        + "               \"types\" : [ \"route\" ]\n"
+        + "            },\n"
+        + "            {\n"
+        + "               \"long_name\" : \"Williamsburg\",\n"
+        + "               \"short_name\" : \"Williamsburg\",\n"
+        + "               \"types\" : [ \"neighborhood\", \"political\" ]\n"
+        + "            },\n"
+        + "            {\n"
+        + "               \"long_name\" : \"Brooklyn\",\n"
+        + "               \"short_name\" : \"Brooklyn\",\n"
+        + "               \"types\" : [ \"sublocality_level_1\", \"sublocality\", \"political\" ]\n"
+        + "            },\n"
+        + "            {\n"
+        + "               \"long_name\" : \"Kings County\",\n"
+        + "               \"short_name\" : \"Kings County\",\n"
+        + "               \"types\" : [ \"administrative_area_level_2\", \"political\" ]\n"
+        + "            },\n"
+        + "            {\n"
+        + "               \"long_name\" : \"New York\",\n"
+        + "               \"short_name\" : \"NY\",\n"
+        + "               \"types\" : [ \"administrative_area_level_1\", \"political\" ]\n"
+        + "            },\n"
+        + "            {\n"
+        + "               \"long_name\" : \"United States\",\n"
+        + "               \"short_name\" : \"US\",\n"
+        + "               \"types\" : [ \"country\", \"political\" ]\n"
+        + "            },\n"
+        + "            {\n"
+        + "               \"long_name\" : \"11211\",\n"
+        + "               \"short_name\" : \"11211\",\n"
+        + "               \"types\" : [ \"postal_code\" ]\n"
+        + "            }\n"
+        + "         ],\n"
+        + "         \"formatted_address\" : \"277 Bedford Ave, Brooklyn, NY 11211, USA\",\n"
+        + "         \"geometry\" : {\n"
+        + "            \"location\" : {\n"
+        + "               \"lat\" : 40.714232,\n"
+        + "               \"lng\" : -73.9612889\n"
+        + "            },\n"
+        + "            \"location_type\" : \"ROOFTOP\",\n"
+        + "            \"viewport\" : {\n"
+        + "               \"northeast\" : {\n"
+        + "                  \"lat\" : 40.7155809802915,\n"
+        + "                  \"lng\" : -73.9599399197085\n"
+        + "               },\n"
+        + "               \"southwest\" : {\n"
+        + "                  \"lat\" : 40.7128830197085,\n"
+        + "                  \"lng\" : -73.96263788029151\n"
+        + "               }\n"
+        + "            }\n"
+        + "         },\n"
+        + "         \"partial_match\" : true,\n"
+        + "         \"place_id\" : \"ChIJd8BlQ2BZwokRAFUEcm_qrcA\",\n"
+        + "         \"types\" : [ \"street_address\" ]\n"
+        + "      }\n"
+        + "   ],\n"
+        + "   \"status\" : \"OK\"\n"
+        + "}";
 
   @SuppressWarnings("NullableProblems") // Initialized in @Before.
   @NonNull private MockWebServer mockWebServer;
@@ -429,18 +501,35 @@ import static org.assertj.core.api.Assertions.fail;
     mockWebServer.shutdown();
   }
 
-  @Test public void items_shouldHandleCorrectResponse() {
-    mockWebServer.enqueue(new MockResponse().setBody(SAMPLE_RESPONSE));
+  @Test public void items_shouldHandleCorrectDirectionResponse() {
+    mockWebServer.enqueue(new MockResponse().setBody(SAMPLE_DIRECTION_RESPONSE));
 
     // Get items from the API
     final DirectionResponse response =
-        uderRestApi.getDirection("origin", "destination", DirectionModel.API_KEY)
+        uderRestApi.getDirection("origin", "destination", Constants.API_KEY)
             .toBlocking()
             .value();
 
     assertThat(response.routes).hasSize(1);
     assertThat(response.routes.get(0).legs).hasSize(1);
     assertThat(response.routes.get(0).legs.get(0).steps).hasSize(13);
+  }
+
+
+  @Test public void items_shouldHandleCorrectPlaceResponse() {
+    mockWebServer.enqueue(new MockResponse().setBody(SAMPLE_PLACE_RESPONSE));
+
+    // Get items from the API
+    final PlaceResponse response =
+        uderRestApi.queryPlace("1,2", Constants.API_KEY)
+            .toBlocking()
+            .value();
+
+
+      assertThat(response.results).hasSize(1);
+      final Address address = response.results.get(0);
+      assertThat(address.formattedAddress()).isEqualTo("277 Bedford Ave, Brooklyn, NY 11211, USA");
+      assertThat(address.placeId()).isEqualTo("ChIJd8BlQ2BZwokRAFUEcm_qrcA");
   }
 
   // Such tests assert that no matter how we implement our REST api:
@@ -452,7 +541,7 @@ import static org.assertj.core.api.Assertions.fail;
       mockWebServer.enqueue(new MockResponse().setStatus("HTTP/1.1 " + errorCode + " Not today"));
 
       try {
-        uderRestApi.getDirection("origin", "destination", DirectionModel.API_KEY)
+        uderRestApi.getDirection("origin", "destination", Constants.API_KEY)
             .toBlocking()
             .value();
         fail("HttpException should be thrown for error code: " + errorCode);
