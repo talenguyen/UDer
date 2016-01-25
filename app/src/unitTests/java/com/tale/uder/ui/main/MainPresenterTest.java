@@ -8,10 +8,13 @@
 package com.tale.uder.ui.main;
 
 import android.support.annotation.NonNull;
-import com.google.android.gms.location.places.Place;
 import com.google.android.gms.maps.model.LatLng;
+import com.tale.uder.api.entities.Address;
+import com.tale.uder.api.entities.Geometry;
+import com.tale.uder.api.entities.Location;
 import com.tale.uder.models.AnalyticsModel;
 import com.tale.uder.models.DirectionModel;
+import com.tale.uder.models.PlaceModel;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
@@ -22,6 +25,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -35,12 +39,16 @@ public class MainPresenterTest {
   @NonNull private DirectionModel directionModel;
 
   @SuppressWarnings("NullableProblems") // Initialized in @Before.
+  @NonNull private PlaceModel placeModel;
+
+  @SuppressWarnings("NullableProblems") // Initialized in @Before.
   @NonNull private MainView mainView;
   
   @Before public void beforeEachTest() {
     final AnalyticsModel analyticsModel = mock(AnalyticsModel.class);
     directionModel = mock(DirectionModel.class);
-    mainPresenter = new MainPresenter(analyticsModel, directionModel) {
+    placeModel = mock(PlaceModel.class);
+    mainPresenter = new MainPresenter(analyticsModel, directionModel, placeModel) {
       @Override boolean test() {
         return true;
       }
@@ -53,7 +61,7 @@ public class MainPresenterTest {
 
     final String address = "123 Ho Chi Minh";
     final LatLng latLng = new LatLng(1, 1);
-    mainPresenter.setFrom(mockPlace(address, latLng));
+    mainPresenter.setFrom(mockAddress(address, latLng));
 
     verify(mainView).showFromAddress(eq(address));
     verify(mainView).showFromLocation(eq(latLng));
@@ -64,7 +72,7 @@ public class MainPresenterTest {
 
     final String address = "123 Ho Chi Minh";
     final LatLng latLng = new LatLng(1, 1);
-    mainPresenter.setTo(mockPlace(address, latLng));
+    mainPresenter.setTo(mockAddress(address, latLng));
 
     verify(mainView).showToAddress(eq(address));
     verify(mainView).showToLocation(eq(latLng));
@@ -78,8 +86,8 @@ public class MainPresenterTest {
   @Test public void direction_shouldNotShowDirectionIfOnlyPickFrom() {
     mainPresenter.bindView(mainView);
 
-    final Place place = mockPlace("123 Ho Chi Minh", new LatLng(1, 1));
-    mainPresenter.setFrom(place);
+    final Address address = mockAddress("123 Ho Chi Minh", new LatLng(1, 1));
+    mainPresenter.setFrom(address);
 
     verify(mainView, never()).showDirection(any());
   }
@@ -87,8 +95,8 @@ public class MainPresenterTest {
   @Test public void direction_shouldNotShowDirectionIfOnlyPickTo() {
     mainPresenter.bindView(mainView);
 
-    final Place place = mockPlace("123 Ho Chi Minh", new LatLng(1, 1));
-    mainPresenter.setTo(place);
+    final Address address = mockAddress("123 Ho Chi Minh", new LatLng(1, 1));
+    mainPresenter.setTo(address);
 
     verify(mainView, never()).showDirection(any());
   }
@@ -97,11 +105,36 @@ public class MainPresenterTest {
     mainPresenter.bindView(mainView);
     final List<LatLng> directions =
         Arrays.asList(new LatLng(1, 2), new LatLng(1, 2), new LatLng(1, 2));
-    final Place place = mockPlace("123 Ho Chi Minh", new LatLng(1, 1));
+    final Address address = mockAddress("123 Ho Chi Minh", new LatLng(1, 1));
     when(directionModel.getDirection(any(), any())).thenReturn(Single.just(directions));
-    mainPresenter.setFrom(place);
-    mainPresenter.setTo(place);
+    mainPresenter.setFrom(address);
+    mainPresenter.setTo(address);
     verify(mainView).showDirection(eq(directions));
+  }
+
+  @Test public void dragMarker_shouldChangeFromAddressAndPositionAfterDragFromMarker() {
+    mainPresenter.bindView(mainView);
+    final String formattedAddress = "123 Ho Chi Minh";
+    final LatLng latLng = new LatLng(1, 1);
+    Address address = mockAddress(formattedAddress, latLng);
+    when(address.formattedAddress()).thenReturn(formattedAddress);
+    when(placeModel.queryPlace(eq(latLng.latitude), eq(latLng.longitude))).thenReturn(
+        Single.just(address));
+    // Set address to display the marker.
+    mainPresenter.setFrom(address);
+    // Mocking change position
+    mainPresenter.onChangeFromPosition(latLng);
+    verify(mainView, times(2)).showFromAddress(formattedAddress);
+    verify(mainView, times(2)).showFromLocation(latLng);
+  }
+
+  @Test public void dragMarker_shouldUpdateDirectionAfterPickFromAndToThenDragFromMarker() {
+  }
+
+  @Test public void dragMarker_shouldChangeToAddressAfterDragToMarker() {
+  }
+
+  @Test public void dragMarker_shouldUpdateDirectionAfterPickFromAndToThenDragToMarker() {
   }
 
   @Test public void unbind_shouldNeverInteractAfterUnbind() {
@@ -112,18 +145,22 @@ public class MainPresenterTest {
     // Unbind before onPick
     mainPresenter.unbindView(mainView);
 
-    final Place place = mockPlace("123 Ho Chi Minh", new LatLng(1, 1));
-    mainPresenter.setFrom(place);
+    final Address address = mockAddress("123 Ho Chi Minh", new LatLng(1, 1));
+    mainPresenter.setFrom(address);
     verifyZeroInteractions(mainView);
 
-    mainPresenter.setTo(place);
+    mainPresenter.setTo(address);
     verifyZeroInteractions(mainView);
   }
 
-  @NonNull private Place mockPlace(@NonNull String address, @NonNull LatLng latLng) {
-    final Place place = mock(Place.class);
-    when(place.getAddress()).thenReturn(address);
-    when(place.getLatLng()).thenReturn(latLng);
-    return place;
+  @NonNull private Address mockAddress(@NonNull String address, @NonNull LatLng latLng) {
+    final Address mock = mock(Address.class);
+    final Geometry geometry = new Geometry();
+    geometry.location = new Location();
+    geometry.location.lat = latLng.latitude;
+    geometry.location.lng = latLng.longitude;
+    when(mock.formattedAddress()).thenReturn(address);
+    when(mock.geometry()).thenReturn(geometry);
+    return mock;
   }
 }

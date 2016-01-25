@@ -2,6 +2,7 @@ package com.tale.uder.ui.main;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,9 +28,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.tale.uder.R;
 import com.tale.uder.UderApp;
+import com.tale.uder.api.entities.Address;
+import com.tale.uder.api.entities.Geometry;
+import com.tale.uder.api.entities.Location;
 import com.tale.uder.ui.other.ViewModifier;
 import java.util.List;
 import javax.inject.Inject;
@@ -37,7 +42,8 @@ import javax.inject.Named;
 
 import static com.tale.uder.developer_settings.DeveloperSettingsModule.MAIN_ACTIVITY_VIEW_MODIFIER;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, MainView {
+public class MainActivity extends AppCompatActivity
+    implements OnMapReadyCallback, MainView, GoogleMap.OnMarkerDragListener {
 
   private static final int SEARCH_FROM_REQUEST_CODE = 1;
   private static final int SEARCH_TO_REQUEST_CODE = 2;
@@ -55,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
   private Marker markerFrom;
   private Marker markerTo;
   private int mapPadding;
+  private String markerTitleFrom;
+  private String markerTitleTo;
+  private Polyline polyline;
 
   @SuppressLint("InflateParams") // It's okay in our case.
   @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,7 +81,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     presenter.bindView(this);
 
     mapPadding = getResources().getDisplayMetrics().widthPixels / 3;
-
+    markerTitleFrom = getString(R.string.from);
+    markerTitleTo = getString(R.string.to);
   }
 
   @Override protected void onDestroy() {
@@ -90,10 +100,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
   @Override public void onMapReady(GoogleMap googleMap) {
     this.googleMap = googleMap;
-    setupMaps(googleMap);
+    setupMaps(this.googleMap);
   }
 
   private void setupMaps(GoogleMap googleMap) {
+    googleMap.setOnMarkerDragListener(this);
     final UiSettings uiSettings = googleMap.getUiSettings();
     uiSettings.setZoomGesturesEnabled(true);
     uiSettings.setScrollGesturesEnabled(true);
@@ -103,10 +114,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     if (requestCode == SEARCH_FROM_REQUEST_CODE || requestCode == SEARCH_TO_REQUEST_CODE) {
       if (resultCode == RESULT_OK) {
         final Place place = PlaceAutocomplete.getPlace(this, data);
+        final CharSequence placeAddress = place.getAddress();
+        final LatLng latLng = place.getLatLng();
+        final Location location = new Location(latLng.latitude, latLng.longitude);
+        final Geometry geometry = new Geometry(location);
+        final Address address = Address.builder()
+            .placeId(place.getId())
+            .formattedAddress(placeAddress == null ? "" : placeAddress.toString())
+            .geometry(geometry)
+            .build();
         if (requestCode == SEARCH_FROM_REQUEST_CODE) {
-          presenter.setFrom(place);
+          presenter.setFrom(address);
         } else {
-          presenter.setTo(place);
+          presenter.setTo(address);
         }
       } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
         Status status = PlaceAutocomplete.getStatus(this, data);
@@ -150,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
       return;
     }
     if (markerFrom == null) {
-      markerFrom = addMarker(latLng, getString(R.string.from));
+      markerFrom = addMarker(latLng, markerTitleFrom);
     } else {
       // If marker already exist then we just change its position.
       markerFrom.setPosition(latLng);
@@ -163,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
       return;
     }
     if (markerTo == null) {
-      markerTo = addMarker(latLng, getString(R.string.to));
+      markerTo = addMarker(latLng, markerTitleTo);
     } else {
       // If marker already exist then we just change its position.
       markerTo.setPosition(latLng);
@@ -175,11 +195,33 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     if (googleMap == null) {
       return;
     }
-    googleMap.addPolyline(new PolylineOptions().addAll(points).geodesic(true));
+    if (polyline != null) {
+      // We need to remove the previous direction
+      polyline.remove();
+    }
+    polyline = googleMap.addPolyline(
+        new PolylineOptions().addAll(points).geodesic(true).color(Color.BLUE));
   }
 
   @Override public void showLoadDirectionError() {
     Snackbar.make(rootView, R.string.error_load_direction, Snackbar.LENGTH_SHORT).show();
+  }
+
+  @Override public void onMarkerDragStart(Marker marker) {
+    // no-op
+  }
+
+  @Override public void onMarkerDrag(Marker marker) {
+    // no-op
+  }
+
+  @Override public void onMarkerDragEnd(Marker marker) {
+    final String title = marker.getTitle();
+    if (title.equals(markerTitleFrom)) {
+      presenter.onChangeFromPosition(marker.getPosition());
+    } else {
+      presenter.onChangeToPosition(marker.getPosition());
+    }
   }
 
   private Marker addMarker(@NonNull LatLng latLng, @NonNull String title) {
