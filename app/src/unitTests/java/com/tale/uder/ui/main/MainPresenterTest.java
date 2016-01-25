@@ -22,6 +22,7 @@ import org.junit.Test;
 import rx.Single;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -117,7 +118,6 @@ public class MainPresenterTest {
     final String formattedAddress = "123 Ho Chi Minh";
     final LatLng latLng = new LatLng(1, 1);
     Address address = mockAddress(formattedAddress, latLng);
-    when(address.formattedAddress()).thenReturn(formattedAddress);
     when(placeModel.queryPlace(eq(latLng.latitude), eq(latLng.longitude))).thenReturn(
         Single.just(address));
     // Set address to display the marker.
@@ -126,15 +126,65 @@ public class MainPresenterTest {
     mainPresenter.onChangeFromPosition(latLng);
     verify(mainView, times(2)).showFromAddress(formattedAddress);
     verify(mainView, times(2)).showFromLocation(latLng);
+    // Make sure no side effect.
+    verify(mainView, never()).showToAddress(anyString());
+    verify(mainView, never()).showToLocation(any());
   }
 
   @Test public void dragMarker_shouldUpdateDirectionAfterPickFromAndToThenDragFromMarker() {
+    mainPresenter.bindView(mainView);
+    final List<LatLng> directions =
+        Arrays.asList(new LatLng(1, 1), new LatLng(2, 2), new LatLng(3, 3));
+    when(directionModel.getDirection(any(), any())).thenReturn(Single.just(directions));
+    final Address addressFrom = mockAddress("1 Ho Chi Minh", new LatLng(1, 1));
+    final Address addressTo = mockAddress("2 Ho Chi Minh", new LatLng(2, 2));
+    final LatLng dragToLatLng = new LatLng(3, 3);
+    final Address dragToAddress = mockAddress("3 Ho Chi Minh", dragToLatLng);
+    when(placeModel.queryPlace(eq(dragToLatLng.latitude), eq(dragToLatLng.longitude))).thenReturn(
+        Single.just(dragToAddress));
+    mainPresenter.setFrom(addressFrom);
+    mainPresenter.setTo(addressTo);
+    verify(mainView).showDirection(eq(directions));
+    // Mocking change position
+    mainPresenter.onChangeFromPosition(dragToLatLng);
+    verify(mainView, times(2)).showDirection(eq(directions));
   }
 
-  @Test public void dragMarker_shouldChangeToAddressAfterDragToMarker() {
+  @Test public void dragMarker_shouldChangeToAddressAndPositionAfterDragToMarker() {
+    mainPresenter.bindView(mainView);
+    final String formattedAddress = "123 Ho Chi Minh";
+    final LatLng latLng = new LatLng(1, 1);
+    Address address = mockAddress(formattedAddress, latLng);
+    when(placeModel.queryPlace(eq(latLng.latitude), eq(latLng.longitude))).thenReturn(
+        Single.just(address));
+    // Set address to display the marker.
+    mainPresenter.setTo(address);
+    // Mocking change position
+    mainPresenter.onChangeToPosition(latLng);
+    verify(mainView, times(2)).showToAddress(formattedAddress);
+    verify(mainView, times(2)).showToLocation(latLng);
+    // Make sure no side effect.
+    verify(mainView, never()).showFromAddress(anyString());
+    verify(mainView, never()).showFromLocation(any());
   }
 
   @Test public void dragMarker_shouldUpdateDirectionAfterPickFromAndToThenDragToMarker() {
+    mainPresenter.bindView(mainView);
+    final List<LatLng> directions =
+        Arrays.asList(new LatLng(1, 1), new LatLng(2, 2), new LatLng(3, 3));
+    when(directionModel.getDirection(any(), any())).thenReturn(Single.just(directions));
+    final Address addressFrom = mockAddress("1 Ho Chi Minh", new LatLng(1, 1));
+    final Address addressTo = mockAddress("2 Ho Chi Minh", new LatLng(2, 2));
+    final LatLng dragToLatLng = new LatLng(3, 3);
+    final Address dragToAddress = mockAddress("3 Ho Chi Minh", dragToLatLng);
+    when(placeModel.queryPlace(eq(dragToLatLng.latitude), eq(dragToLatLng.longitude))).thenReturn(
+        Single.just(dragToAddress));
+    mainPresenter.setFrom(addressFrom);
+    mainPresenter.setTo(addressTo);
+    verify(mainView).showDirection(eq(directions));
+    // Mocking change position
+    mainPresenter.onChangeToPosition(dragToLatLng);
+    verify(mainView, times(2)).showDirection(eq(directions));
   }
 
   @Test public void unbind_shouldNeverInteractAfterUnbind() {
