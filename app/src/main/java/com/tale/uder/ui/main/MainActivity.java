@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity
 
   private static final int SEARCH_FROM_REQUEST_CODE = 1;
   private static final int SEARCH_TO_REQUEST_CODE = 2;
+  private static final int DEFAULT_ZOOM_LEVEL = 15;
 
   @Inject @Named(MAIN_ACTIVITY_VIEW_MODIFIER) ViewModifier viewModifier;
   @Inject MainPresenter presenter;
@@ -235,16 +236,28 @@ public class MainActivity extends AppCompatActivity
     if (googleMap == null) {
       return;
     }
-    final LatLngBounds.Builder builder = new LatLngBounds.Builder();
-    if (markerFrom != null) {
-      builder.include(markerFrom.getPosition());
-    }
-    if (markerTo != null) {
-      builder.include(markerTo.getPosition());
+    if (markerFrom == null && markerTo == null) {
+      // No data
+      return;
     }
 
-    final LatLngBounds bounds = builder.build();
-    final CameraUpdate update = CameraUpdateFactory.newLatLngBounds(bounds, mapPadding);
-    googleMap.animateCamera(update);
+    if (markerFrom == null) {
+      // No marker from then we just draw marker to.
+      googleMap.animateCamera(
+          CameraUpdateFactory.newLatLngZoom(markerTo.getPosition(), DEFAULT_ZOOM_LEVEL));
+    } else if (markerTo == null) {
+      // No maker to then we just draw marker from
+      googleMap.animateCamera(
+          CameraUpdateFactory.newLatLngZoom(markerFrom.getPosition(), DEFAULT_ZOOM_LEVEL));
+    } else {
+      // Both from and to all available then we need to draw and bounds to display all.
+      final LatLngBounds.Builder builder = new LatLngBounds.Builder();
+      builder.include(markerFrom.getPosition());
+      builder.include(markerTo.getPosition());
+      final LatLngBounds bounds = builder.build();
+      final CameraUpdate update = CameraUpdateFactory.newLatLngBounds(bounds, mapPadding);
+      googleMap.animateCamera(update);
+    }
+
   }
 }
